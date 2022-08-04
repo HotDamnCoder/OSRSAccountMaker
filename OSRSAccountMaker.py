@@ -1,20 +1,20 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
 from faker import Faker
 import requests
 import time
-
+from playwright.sync_api import sync_playwright
+from playwright.sync_api import Page
 
 #* CONSTANTS
 TXT_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
 FAKE = Faker()
 
-FIREFOX_SERVICE = Service(executable_path='geckodriver.exe')
-
 TEMP_MAIL_URL = 'https://generator.email/'
 OSRS_REGISTER_URl = 'https://secure.runescape.com/m=account-creation/create_account?theme=oldschool'
+
+def check_for_captcha(page: Page):
+    if page.locator("id=cf-challenge-stage").is_visible():
+        input('Captcha found! Press enter when solved...')
 
 
 #* GENERATE EMAIL
@@ -47,45 +47,55 @@ print('*********************************************')
 
 
 #* REGISTER
-firefox = webdriver.Firefox(service=FIREFOX_SERVICE)
-firefox.get(OSRS_REGISTER_URl)
+with sync_playwright() as playwright:
+    firefox = playwright.firefox.launch(headless=False)
+    page = firefox.new_page()
 
-#* CHECK IF REACHABLE
-if len(firefox.find_elements(By.XPATH, "//*[text()='The web server is not reachable']")) != 0:
-    print('OSRS server not available right now. Exiting...')
-    exit()
+    page.goto(OSRS_REGISTER_URl)
+    page.wait_for_load_state('networkidle');
 
-#* CAPTCHA
-if len(firefox.find_elements(By.ID, 'cf-challenge-stage')) != 0:
-    input('Captcha found! Press enter when solved...')
+    #* CHECK IF REACHABLE 
+    if page.locator("text=The web server is not reachable").is_visible():
+        print('OSRS server not available right now. Exiting...')
+        exit()
 
-#* ACCEPT COOKIES
-cookie_accept = firefox.find_element(By.ID, 'CybotCookiebotDialogBodyButtonDecline')
-cookie_accept.click()
+    #* CAPTCHA
+    check_for_captcha(page)
 
-#* GET INPUTS
-email_input = firefox.find_element(By.ID, 'create-email')
-password_input = firefox.find_element(By.ID, 'create-password')
+    #* ACCEPT COOKIES
+    cookie_accept = page.locator("id=CybotCookiebotDialogBodyButtonDecline")
+    cookie_accept.click()
 
-day_input = firefox.find_element(By.NAME, 'day')
-month_input = firefox.find_element(By.NAME, 'month')
-year_input = firefox.find_element(By.NAME, 'year')
+    #* GET INPUTS
+    email_input = page.locator('id=create-email')
+    password_input = page.locator('id=create-password')
 
-terms_button = firefox.find_element(By.NAME, 'agree_terms')
-submit_button = firefox.find_element(By.ID, 'create-submit')
+    day_input = page.locator('[name=day]')
+    month_input = page.locator('[name=month]')
+    year_input = page.locator('[name=year]')
 
-#* FILL INPUTS
-email_input.send_keys(email)
-password_input.send_keys(password)
+    terms_button = page.locator('[name=agree_terms]')
+    submit_button = page.locator('id=create-submit')
 
-day_input.send_keys(day)
-month_input.send_keys(month)
-year_input.send_keys(year)
+    #* FILL INPUTS
+    email_input.fill(email)
+    password_input.fill(password)
 
-terms_button.click()
-submit_button.click()
+    day_input.fill(day)
+    month_input.fill(month)
+    year_input.fill(year)
 
-time.sleep(10)
+    terms_button.check()
+    submit_button.click()
+
+    page.wait_for_load_state('networkidle');
+
+    #* CAPTCHA
+    check_for_captcha(page)
+
+    time.sleep(10)
+
+    firefox.close()
 
 #* WRITE VALUES TO TXT
 with open(TXT_PATH, 'a', encoding='UTF-8') as txt_file:
