@@ -5,14 +5,6 @@ import time
 from playwright.sync_api import sync_playwright
 from playwright.sync_api import Page
 
-#* CONSTANTS
-#***********************************************************************************************
-TXT_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
-FAKE = Faker()
-
-TEMP_EMAIL_URL = 'https://generator.email/'
-OSRS_REGISTER_URl = 'https://secure.runescape.com/m=account-creation/create_account?theme=oldschool'
-
 def check_for_captcha(page: Page):
     if page.locator("id=cf-challenge-stage").is_visible():
         input('Captcha found! Press enter when solved...')
@@ -25,6 +17,7 @@ def goto_and_wait(page: Page, url: str):
 #* FAKE DATA GENERATION
 #**********************************************************************************************
 
+FAKE = Faker()
 #* GENERATE USERNAME
 username = FAKE.user_name()
 
@@ -40,6 +33,7 @@ with sync_playwright() as playwright:
     email_page = firefox.new_page()
 
     #* GENERATE EMAIL 
+    TEMP_EMAIL_URL = 'https://generator.email/'
     goto_and_wait(email_page, TEMP_EMAIL_URL)
 
     email_username = email_page.locator('id=userName').input_value()
@@ -50,6 +44,7 @@ with sync_playwright() as playwright:
     #* REGISTRATION
     #******************************************************************************************
 
+    OSRS_REGISTER_URl = 'https://secure.runescape.com/m=account-creation/create_account?theme=oldschool'
     register_page = firefox.new_page()
     goto_and_wait(register_page, OSRS_REGISTER_URl)
 
@@ -110,6 +105,7 @@ print(f'Birthdate: {birthdate}')
 print('*********************************************')
 
 #* WRITE BOT INFO TO TXT
+TXT_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
 with open(TXT_PATH, 'a', encoding='UTF-8') as txt_file:
     bot_type_padding = ' ' * 20
     username_padding = ' ' * (20 - len(username))
