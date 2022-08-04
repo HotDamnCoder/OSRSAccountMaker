@@ -1,6 +1,4 @@
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
@@ -10,7 +8,9 @@ import time
 
 
 #* CONSTANTS
+TXT_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
 FAKE = Faker()
+
 FIREFOX_SERVICE = Service(executable_path='geckodriver.exe')
 
 TEMP_MAIL_URL = 'https://generator.email/'
@@ -44,6 +44,7 @@ print(f'Username: {username}')
 print(f'Password: {password}')
 print(f'Birthdate: {birthdate}')
 print('*********************************************')
+
 
 #* REGISTER
 firefox = webdriver.Firefox(service=FIREFOX_SERVICE)
@@ -85,3 +86,10 @@ terms_button.click()
 submit_button.click()
 
 time.sleep(10)
+
+#* WRITE VALUES TO TXT
+with open(TXT_PATH, 'a', encoding='UTF-8') as txt_file:
+    bot_type_padding = ' ' * 20
+    username_padding = ' ' * (20 - len(username))
+    email_padding = ' ' * (30 - len(email))
+    txt_file.write(f'{bot_type_padding}\t\t\t{username}{username_padding}\t\t\t{email}{email_padding}\t\t\t{password}\n')
