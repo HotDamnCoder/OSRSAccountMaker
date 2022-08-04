@@ -11,7 +11,7 @@ import time
 
 #* CONSTANTS
 FAKE = Faker()
-FIREFOX_SERIVCE = Service(executable_path='geckodriver.exe')
+FIREFOX_SERVICE = Service(executable_path='geckodriver.exe')
 
 TEMP_MAIL_URL = 'https://generator.email/'
 OSRS_REGISTER_URl = 'https://secure.runescape.com/m=account-creation/create_account?theme=oldschool'
@@ -46,7 +46,7 @@ print(f'Birthdate: {birthdate}')
 print('*********************************************')
 
 #* REGISTER
-firefox = webdriver.Firefox(service=FIREFOX_SERIVCE)
+firefox = webdriver.Firefox(service=FIREFOX_SERVICE)
 firefox.get(OSRS_REGISTER_URl)
 
 #* CHECK IF REACHABLE
