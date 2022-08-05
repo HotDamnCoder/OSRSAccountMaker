@@ -3,6 +3,7 @@
         "Cookiebot",
         "Cybot",
         "geckodriver",
+        "networkidle",
         "OSRS"
     ]
 }

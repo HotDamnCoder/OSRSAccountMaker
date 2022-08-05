@@ -1,7 +1,4 @@
-from bs4 import BeautifulSoup
 from faker import Faker
-import requests
-import time
 from playwright.sync_api import sync_playwright
 from playwright.sync_api import Page
 
@@ -18,6 +15,7 @@ def goto_and_wait(page: Page, url: str):
 #**********************************************************************************************
 
 FAKE = Faker()
+
 #* GENERATE USERNAME
 username = FAKE.user_name()
 
@@ -40,6 +38,7 @@ with sync_playwright() as playwright:
     email_domain = email_page.locator('id=domainName2').input_value()
     email = f'{email_username}@{email_domain}'
 
+    email_page.close()
 
     #* REGISTRATION
     #******************************************************************************************
@@ -86,8 +85,6 @@ with sync_playwright() as playwright:
 
     #* CAPTCHA
     check_for_captcha(register_page)
-
-    time.sleep(10)
 
     firefox.close()
 
