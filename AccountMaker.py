@@ -6,10 +6,6 @@ def check_for_captcha(page: Page):
     if page.locator("id=cf-challenge-stage").is_visible():
         input('Captcha found! Press enter when solved...')
 
-def goto_and_wait(page: Page, url: str):
-    page.goto(url)
-    page.wait_for_load_state('networkidle');
-
 
 #* FAKE DATA GENERATION
 #**********************************************************************************************
@@ -32,7 +28,7 @@ with sync_playwright() as playwright:
 
     #* GENERATE EMAIL 
     TEMP_EMAIL_URL = 'https://generator.email/'
-    goto_and_wait(email_page, TEMP_EMAIL_URL)
+    email_page.goto(TEMP_EMAIL_URL, wait_until='networkidle')
 
     email_username = email_page.locator('id=userName').input_value()
     email_domain = email_page.locator('id=domainName2').input_value()
@@ -45,7 +41,8 @@ with sync_playwright() as playwright:
 
     OSRS_REGISTER_URl = 'https://secure.runescape.com/m=account-creation/create_account?theme=oldschool'
     register_page = firefox.new_page()
-    goto_and_wait(register_page, OSRS_REGISTER_URl)
+
+    register_page.goto(OSRS_REGISTER_URl, wait_until='networkidle')
 
     #* CHECK IF REACHABLE 
     if register_page.locator("text=The web server is not reachable").is_visible():
@@ -104,7 +101,8 @@ print('*********************************************')
 #* WRITE BOT INFO TO TXT
 TXT_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
 with open(TXT_PATH, 'a', encoding='UTF-8') as txt_file:
+    separator = '\t' * 3
     bot_type_padding = ' ' * 20
     username_padding = ' ' * (20 - len(username))
     email_padding = ' ' * (30 - len(email))
-    txt_file.write(f'{bot_type_padding}\t\t\t{username}{username_padding}\t\t\t{email}{email_padding}\t\t\t{password}\n')
+    txt_file.write(f'{bot_type_padding}{separator}{username}{username_padding}{separator}{email}{email_padding}{separator}{password}{separator} \n')
