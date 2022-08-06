@@ -7,22 +7,22 @@ def print_error(error: str, email: str):
 def check_for_captcha(page: Page):
     if page.locator("id=cf-challenge-stage").is_visible():
         input('Captcha found! Press enter when solved...')
+        page.wait_for_load_state('networkidle');
+
 
 updated_file_lines = []
 
 with sync_playwright() as playwright:
     TEMP_EMAIL_URL = 'https://generator.email/'
     firefox = playwright.firefox.launch(headless=False)
-    email_page = firefox.new_page()
+    page = firefox.new_page()
 
     with open(BOT_INFO_FILE_PATH, encoding='UTF-8') as bots_txt:
-        #* Remove table headers from memory
-        updated_file_lines.append(bots_txt.readline())
-        updated_file_lines.append(bots_txt.readline())
-        updated_file_lines.append(bots_txt.readline())
-        
+        #* TRANSFER TABLE HEADERS
+        bots_txt_lines = bots_txt.readlines()
+        updated_file_lines += bots_txt_lines[:3]
 
-        for line in bots_txt:
+        for line in bots_txt_lines[3:]:
             #* This gets overwritten if the verification succeeds
             updated_file_lines.append(line)
             
@@ -33,35 +33,52 @@ with sync_playwright() as playwright:
                 print_error("Email already verified!", email)
                 continue
 
-            email_page.goto(TEMP_EMAIL_URL + email, wait_until='domcontentloaded')
+            page.goto(TEMP_EMAIL_URL + email, wait_until='domcontentloaded')
 
             #* CHECK FOR EMAILS
-            if not email_page.locator('id=email-table').is_visible():
+            if not page.locator('id=email-table').is_visible():
                 print_error("No emails found!", email)
                 continue
 
             #* CHECK FOR VERIFICATION EMAIL
-            if not email_page.locator('text="Thank you for registering your email"').first.is_visible():
+            if not page.locator('text="Thank you for registering your email"').first.is_visible():
                 print_error("Can't find verification email!", email)
                 continue
 
             #* GETTING VERIFICATION URL
-            email_page.wait_for_selector('text="VALIDATE NOW"')
+            page.wait_for_selector('text="VALIDATE NOW"')
 
-            verification_url = email_page.locator('text="VALIDATE NOW"').get_attribute('href')
+            verification_url = page.locator('text="VALIDATE NOW"').get_attribute('href')
 
             if verification_url is None:
                 print_error("Can't find verification url from validation button!", email)
-            else:
-                email_page.goto(verification_url, wait_until='networkidle')
-                check_for_captcha(email_page)                      
-                print(f"Email verified for {email}")
+                continue
+           
+            #* VERIFYING
+            page.goto(verification_url, wait_until='networkidle')
             
-            #* UPDATE FILE LINE
-            #* Overwrites the last line which was the old line
-            updated_file_lines[-1] = make_bot_info_line(username, password, email, verified)
+            #* CAPTCHA
+            check_for_captcha(page)
 
-    email_page.close()
+            #* CHECKING FOR SUCCESS
+            if not page.locator('text="Thank you, the email address is now registered to your account."').is_visible():   
+                if page.locator('text="The link you clicked has already been used."').is_visible():    
+                    print_error("Email already verified but not updated!", email)
+                    updated_file_lines[-1] = make_bot_info_line(username, password, email, True)
+                    continue
+                elif page.locator('text="Due to a high number of attempted submissions, you have been temporarily blocked from accessing the page you requested."').is_visible():
+                    print("Too many submissions! Shutting down...")
+                    exit()
+                else:
+                    print_error("Email verification failed for unknown reasons!", email)
+                    continue
+
+            print(f"Email verified for {email}")
+        
+            #* Overwrites the last line which was the old line, kinda hacky ik but removes copy pasting the code
+            updated_file_lines[-1] = make_bot_info_line(username, password, email, True)
+
+    page.close()
     firefox.close()
 
 #* UPDATE FILE

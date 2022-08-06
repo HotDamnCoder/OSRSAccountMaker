@@ -4,7 +4,6 @@ from playwright.sync_api import Page
 from datetime import date
 from AccountSaver import write_bot_info, display_bot_info
 def check_for_captcha(page: Page):
-    page.wait_for_load_state('networkidle');
     if page.locator("id=cf-challenge-stage").is_visible():
         input('Captcha found! Press enter when solved...')
         page.wait_for_load_state('networkidle');
@@ -48,7 +47,7 @@ with sync_playwright() as playwright:
     register_page.goto(OSRS_REGISTER_URl, wait_until='networkidle')
 
     #* CHECK IF REACHABLE 
-    if register_page.locator("text=The web server is not reachable").is_visible():
+    if register_page.locator('text="The web server is not reachable"').is_visible() or register_page.locator('text="An error has occurred and it has not been possible to create your account."'):
         print('OSRS server not available right now. Exiting...')
         exit()
 
