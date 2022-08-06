@@ -39,7 +39,7 @@ with sync_playwright() as playwright:
 
                         if verification_url is not None:
                             email_page.goto(verification_url, wait_until='networkidle')
-                            check_for_captcha(email_page)
+                            check_for_captcha(email_page)                      
                             print(f"Email verified for {email}")
                             verification = "*"
                         else:
