@@ -23,35 +23,38 @@ with sync_playwright() as playwright:
 
         for line in bots_txt:
             type, username, email, password, verification = (arg.strip() for arg in line.split('\t' * 3))
-            if verification != "*":
-                email_page.goto(TEMP_EMAIL_URL + email, wait_until='domcontentloaded')
-                
-                #* CHECK FOR EMAILS
-                if email_page.locator('id=email-table').is_visible():
+            verified = verification == '*'
 
-                    #* CHECK FOR VERIFICATION EMAIL
-                    if email_page.locator('text="Thank you for registering your email"').first.is_visible():
-                        email_page.wait_for_selector('text="VALIDATE NOW"')
-
-                        #* GETTING VERIFICATION URL
-                        verification_url = email_page.locator('text="VALIDATE NOW"').get_attribute('href')
-
-                        if verification_url is not None:
-                            email_page.goto(verification_url, wait_until='networkidle')
-                            check_for_captcha(email_page)                      
-                            print(f"Email verified for {email}")
-                            verification = "*"
-                        else:
-                            print_error("Can't find verification url from validation button!", email)
-                    else:
-                        print_error("Can't find verification email!", email)
-                else:
-                    print_error("No emails found!", email)
-            else:
+            if verified:
                 print_error("Email already verified!", email)
+                continue
 
+            email_page.goto(TEMP_EMAIL_URL + email, wait_until='domcontentloaded')
+
+            #* CHECK FOR EMAILS
+            if not email_page.locator('id=email-table').is_visible():
+                print_error("No emails found!", email)
+                continue
+
+            #* CHECK FOR VERIFICATION EMAIL
+            if not email_page.locator('text="Thank you for registering your email"').first.is_visible():
+                print_error("Can't find verification email!", email)
+                continue
+
+            #* GETTING VERIFICATION URL
+            email_page.wait_for_selector('text="VALIDATE NOW"')
+
+            verification_url = email_page.locator('text="VALIDATE NOW"').get_attribute('href')
+
+            if verification_url is None:
+                print_error("Can't find verification url from validation button!", email)
+            else:
+                email_page.goto(verification_url, wait_until='networkidle')
+                check_for_captcha(email_page)                      
+                print(f"Email verified for {email}")
+            
             #* UPDATE FILE LINE
-            updated_file_lines.append(make_bot_info_line(username, password, email, verification))
+            updated_file_lines.append(make_bot_info_line(username, password, email, True))
 
     email_page.close()
     firefox.close()

@@ -1,13 +1,15 @@
 BOT_INFO_FILE_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
 
-def make_bot_info_line(username: str, password: str, email: str, verification: str=''):
+def make_bot_info_line(username: str, password: str, email: str, verified: bool=False):
     separator = '\t' * 3
     bot_type_padding = ' ' * 20
     username_padding = ' ' * (20 - len(username))
     email_padding = ' ' * (30 - len(email))
 
-    if verification == '':
+    if not verified :
         verification = ' '
+    else:
+        verification = '*'
 
     return f'{bot_type_padding}{separator}{username}{username_padding}{separator}{email}{email_padding}{separator}{password}{separator}{verification}\n'
 
