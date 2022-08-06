@@ -20,8 +20,12 @@ with sync_playwright() as playwright:
         updated_file_lines.append(bots_txt.readline())
         updated_file_lines.append(bots_txt.readline())
         updated_file_lines.append(bots_txt.readline())
+        
 
         for line in bots_txt:
+            #* This gets overwritten if the verification succeeds
+            updated_file_lines.append(line)
+            
             type, username, email, password, verification = (arg.strip() for arg in line.split('\t' * 3))
             verified = verification == '*'
 
@@ -54,7 +58,8 @@ with sync_playwright() as playwright:
                 print(f"Email verified for {email}")
             
             #* UPDATE FILE LINE
-            updated_file_lines.append(make_bot_info_line(username, password, email, True))
+            #* Overwrites the last line which was the old line
+            updated_file_lines[-1] = make_bot_info_line(username, password, email, verified)
 
     email_page.close()
     firefox.close()
