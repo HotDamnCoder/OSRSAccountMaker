@@ -1,8 +1,8 @@
 from faker import Faker
 from playwright.sync_api import sync_playwright
 from playwright.sync_api import Page
-from datetime import date, datetime 
-
+from datetime import date
+from AccountSaver import write_bot_info, display_bot_info
 def check_for_captcha(page: Page):
     page.wait_for_load_state('networkidle');
     if page.locator("id=cf-challenge-stage").is_visible():
@@ -55,7 +55,6 @@ with sync_playwright() as playwright:
     #* CAPTCHA
     check_for_captcha(register_page)
 
-
     #* ACCEPT COOKIES
     cookie_accept = register_page.locator("id=CybotCookiebotDialogBodyButtonDecline")
     cookie_accept.click()
@@ -87,7 +86,7 @@ with sync_playwright() as playwright:
     check_for_captcha(register_page)
 
     #* CHECKING FOR SUCCESS
-    register_page.reload() #! THIS IS NEEDED BECAUSE OF THE URL CHANGE I THINK
+    register_page.reload() #! THIS IS NEEDED BECAUSE OF THE URL CHANGE 
     if register_page.locator('text="You can now begin your adventure with your new account."').is_visible():
         account_made = True
         print("Account making successful!")
@@ -102,21 +101,8 @@ with sync_playwright() as playwright:
 #* BOT INFO DISPLAYING AND SAVING 
 #**************************************************************************************************
 
-#* DISPLAY BOT INFO
-print('            FAKE OSRS ACCOUNT INFO           ')
-print('*********************************************')
-print(f'Email: {email}')
-print(f'Username: {username}')
-print(f'Password: {password}')
-print(f'Birthdate: {birthdate}')
-print('*********************************************')
+#* This is for debugging purposes
+display_bot_info(username, password, email, birthdate)
 
-#* WRITE BOT INFO TO TXT
 if account_made:
-    TXT_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
-    with open(TXT_PATH, 'a', encoding='UTF-8') as txt_file:
-        separator = '\t' * 3
-        bot_type_padding = ' ' * 20
-        username_padding = ' ' * (20 - len(username))
-        email_padding = ' ' * (30 - len(email))
-        txt_file.write(f'{bot_type_padding}{separator}{username}{username_padding}{separator}{email}{email_padding}{separator}{password}{separator} \n')
+    write_bot_info(username, password, email)

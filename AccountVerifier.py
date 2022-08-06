@@ -1,6 +1,6 @@
 from playwright.sync_api import sync_playwright
 from playwright.sync_api import Page
-
+from AccountSaver import make_bot_info_line, BOT_INFO_FILE_PATH
 def print_error(error: str, email: str):
     print(f'{error} Skipping email verification for {email}')
 
@@ -15,8 +15,7 @@ with sync_playwright() as playwright:
     firefox = playwright.firefox.launch(headless=False)
     email_page = firefox.new_page()
 
-    TXT_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
-    with open(TXT_PATH, encoding='UTF-8') as bots_txt:
+    with open(BOT_INFO_FILE_PATH, encoding='UTF-8') as bots_txt:
         #* Remove table headers from memory
         updated_file_lines.append(bots_txt.readline())
         updated_file_lines.append(bots_txt.readline())
@@ -51,22 +50,12 @@ with sync_playwright() as playwright:
             else:
                 print_error("Email already verified!", email)
 
-
             #* UPDATE FILE LINE
-            separator = '\t' * 3
-            bot_type_padding = ' ' * 20
-            username_padding = ' ' * (20 - len(username))
-            email_padding = ' ' * (30 - len(email))
-
-            if verification == '':
-                verification = ' '
-
-            new_line =  f'{bot_type_padding}{separator}{username}{username_padding}{separator}{email}{email_padding}{separator}{password}{separator}{verification}\n'
-            updated_file_lines.append(new_line)
+            updated_file_lines.append(make_bot_info_line(username, password, email, verification))
 
     email_page.close()
     firefox.close()
 
 #* UPDATE FILE
-with open(TXT_PATH, mode="w", encoding='UTF-8') as bots_txt:
+with open(BOT_INFO_FILE_PATH, mode="w", encoding='UTF-8') as bots_txt:
         bots_txt.writelines(updated_file_lines)
