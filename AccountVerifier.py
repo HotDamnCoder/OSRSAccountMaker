@@ -6,8 +6,11 @@ def print_error(error: str, email: str):
 
 def check_for_captcha(page: Page):
     if page.locator("id=cf-challenge-stage").is_visible():
-        input('Captcha found! Press enter when solved...')
-        page.wait_for_load_state('networkidle');
+        print('Captcha found!')
+        print('Waiting for captcha to be solved...')
+        page.wait_for_selector("id=cf-challenge-stage", state='hidden')
+        print('Captcha Solved!')
+        page.wait_for_event('domcontentloaded')
 
 
 updated_file_lines = []
@@ -63,7 +66,7 @@ with sync_playwright() as playwright:
             #* CHECKING FOR SUCCESS
             if not page.locator('text="Thank you, the email address is now registered to your account."').is_visible():   
                 if page.locator('text="The link you clicked has already been used."').is_visible():    
-                    print_error("Email already verified but not updated!", email)
+                    print(f"Email already verified but not updated for {email}! Updating it...")
                     updated_file_lines[-1] = make_bot_info_line(username, password, email, True)
                     continue
                 elif page.locator('text="Due to a high number of attempted submissions, you have been temporarily blocked from accessing the page you requested."').is_visible():
