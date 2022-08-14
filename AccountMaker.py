@@ -2,7 +2,7 @@ from faker import Faker
 from playwright.sync_api import sync_playwright
 from playwright.sync_api import Page
 from datetime import date
-from AccountSaver import write_bot_info, display_bot_info
+from AccountSaver import write_bot_data, display_bot_info
 
 def check_for_captcha(page: Page):
     if page.locator("id=cf-challenge-stage").is_visible():
@@ -108,4 +108,4 @@ with sync_playwright() as playwright:
 display_bot_info(username, password, email, birthdate)
 
 if account_made:
-    write_bot_info(username, password, email)
+    write_bot_data(username, password, email)

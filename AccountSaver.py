@@ -1,23 +1,28 @@
-BOT_INFO_FILE_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.txt'
+import json
 
-def make_bot_info_line(username: str, password: str, email: str, verified: bool=False):
-    separator = '\t' * 3
-    bot_type_padding = ' ' * 20
-    username_padding = ' ' * (20 - len(username))
-    email_padding = ' ' * (30 - len(email))
+BOT_INFO_FILE_PATH = 'C:\\Users\\Marcus\\Desktop\\bots.json'
 
-    if not verified :
-        verification = ' '
-    else:
-        verification = '*'
+def create_bot_json(username: str, password: str, email:str ):
+    return {
+        "description": "",
+        "username" : username,
+        "email": email,
+        "password": password,
+        "verified": False
+    }
 
-    return f'{bot_type_padding}{separator}{username}{username_padding}{separator}{email}{email_padding}{separator}{password}{separator}{verification}\n'
+def write_bot_data(username: str, password: str, email: str):
+    with open(BOT_INFO_FILE_PATH, encoding='UTF-8') as json_file:
+        bot_data  = json.load(json_file)
+        bot_data["bots"].append(create_bot_json(username, password, email))
+    update_bot_data(bot_data)
 
-def write_bot_info(username: str, password: str, email: str):
-    with open(BOT_INFO_FILE_PATH, 'a', encoding='UTF-8') as txt_file:
-        txt_file.write(make_bot_info_line(username, password, email))
+def update_bot_data(bot_data: dict):
+    with open(BOT_INFO_FILE_PATH, mode="w", encoding='UTF-8') as json_file:
+        json.dump(bot_data, json_file, indent=4)
 
 def display_bot_info(username: str, password: str, email: str, birthdate: str):
+    print()
     print('            FAKE OSRS ACCOUNT INFO           ')
     print('*********************************************')
     print(f'Email: {email}')
